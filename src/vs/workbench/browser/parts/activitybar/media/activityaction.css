@@ -208,3 +208,105 @@
 	left: auto;
 	right: 0;
 }
+
+/* Mobile Responsive Design for Activity Actions */
+
+/* Tablet screens - Keep vertical layout but adjust sizes */
+@media screen and (max-width: 1024px) and (min-width: 769px) {
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-label {
+		width: 40px !important;
+		height: 40px !important;
+	}
+	
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-label.codicon {
+		font-size: 20px !important;
+	}
+}
+
+/* Mobile and small tablet screens - Move to bottom */
+@media screen and (max-width: 768px) {
+	/* Force horizontal layout for action items */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar {
+		display: flex !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: center !important;
+		gap: 8px;
+	}
+	
+	/* Action items horizontal layout */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item {
+		display: inline-flex !important;
+		margin-right: 0 !important;
+		margin-bottom: 0 !important;
+		flex-shrink: 0;
+	}
+	
+	/* Smaller action labels on mobile */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-label {
+		width: 44px !important;
+		height: 44px !important;
+	}
+	
+	/* Codicon size adjustment */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-label.codicon {
+		font-size: 22px !important;
+	}
+	
+	/* Active indicator for mobile - show at top */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item.checked .active-item-indicator:before,
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item:focus .active-item-indicator:before {
+		top: 0 !important;
+		bottom: auto !important;
+		height: 3px !important;
+		width: 100% !important;
+		border-left: none !important;
+		border-top: 3px solid var(--vscode-activityBar-activeBorder) !important;
+		left: 0 !important;
+		right: auto !important;
+	}
+	
+	/* Badge positioning for mobile */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .badge .badge-content {
+		top: 4px !important;
+		right: 4px !important;
+		font-size: 9px !important;
+		min-width: 8px !important;
+		height: 14px !important;
+		line-height: 14px !important;
+	}
+	
+	/* Profile badge positioning for mobile */
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .profile-badge .profile-text-overlay {
+		top: 4px !important;
+		right: 4px !important;
+		font-size: 8px !important;
+		padding: 1px 3px !important;
+	}
+}
+
+/* Small mobile screens */
+@media screen and (max-width: 480px) {
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar {
+		gap: 6px !important;
+	}
+	
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-label {
+		width: 38px !important;
+		height: 38px !important;
+	}
+	
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-label.codicon {
+		font-size: 18px !important;
+	}
+}
+
+/* Touch-friendly active states for mobile */
+@media (hover: none) and (pointer: coarse) {
+	.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item:active {
+		background-color: var(--vscode-activityBar-activeBackground);
+		border-radius: 6px;
+		transform: scale(0.95);
+		transition: all 0.1s ease;
+	}
+}
