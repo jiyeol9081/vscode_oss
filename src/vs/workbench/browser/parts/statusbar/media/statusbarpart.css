@@ -242,3 +242,54 @@
 	color: var(--vscode-statusBarItem-offlineHoverForeground);
 	background-color: var(--vscode-statusBarItem-offlineHoverBackground) !important;
 }
+
+/* Mobile Responsive Design for Status Bar */
+@media screen and (max-width: 768px) {
+	/* Move Status Bar above the bottom bars on mobile */
+	.monaco-workbench .part.statusbar {
+		position: fixed !important;
+		bottom: 55px !important; /* Above Activity Bar (54px) + 1px gap */
+		left: 0 !important;
+		right: 0 !important;
+		width: 100% !important;
+		z-index: 1000002 !important; /* Above activity bar */
+		background-color: var(--vscode-statusBar-background) !important;
+		border-top: 1px solid var(--vscode-statusBar-border) !important;
+		box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1) !important;
+	}
+
+	/* Ensure left and right items containers are visible */
+	.monaco-workbench .part.statusbar > .left-items,
+	.monaco-workbench .part.statusbar > .right-items {
+		display: flex !important;
+		align-items: center !important;
+		height: 100% !important;
+	}
+
+	/* Adjust left items container for mobile */
+	.monaco-workbench .part.statusbar > .left-items {
+		flex: 1 !important;
+		justify-content: flex-start !important;
+		padding-left: 8px !important;
+	}
+
+	/* Adjust right items container for mobile */
+	.monaco-workbench .part.statusbar > .right-items {
+		flex-shrink: 0 !important;
+		justify-content: flex-end !important;
+		padding-right: 8px !important;
+	}
+
+	/* Make status bar items more touch-friendly on mobile */
+	.monaco-workbench .part.statusbar > .items-container > .statusbar-item {
+		line-height: 22px !important;
+		padding: 0 4px !important;
+		min-height: 22px !important;
+	}
+
+	/* Adjust workbench main content to account for status bar */
+	.monaco-workbench .part.editor,
+	.monaco-workbench .part.panel {
+		bottom: 77px !important; /* Status Bar (22px) + Activity Bar (54px) + gap (1px) */
+	}
+}

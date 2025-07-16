@@ -63,7 +63,6 @@
 	width: 100%;
 	height: 35px;
 }
-
 /* Mobile Responsive Design */
 
 /* Large tablets and small desktop screens - Keep left sidebar */
@@ -71,7 +70,7 @@
 	.monaco-workbench .part.activitybar {
 		width: 40px; /* Narrower on large tablets */
 	}
-	
+
 	.monaco-workbench .activitybar .menubar {
 		height: 30px; /* Smaller menu bar */
 	}
@@ -85,50 +84,220 @@
 		bottom: 0 !important;
 		left: 0 !important;
 		right: 0 !important;
+		top: auto !important;
 		width: 100% !important;
 		height: 54px !important;
-		z-index: 1000;
+		z-index: 1000000 !important; /* Higher than sidebar container */
 		border-top: 1px solid var(--vscode-activityBar-border);
 		border-right: none;
 		border-bottom: none;
+		border-left: none;
 		box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+		background-color: var(--vscode-activityBar-background) !important;
+		transform: translateZ(0) !important;
+		will-change: transform !important;
+		margin-top: 1px !important; /* Create gap between Status Bar and Activity Bar */
 	}
-	
-	/* Horizontal layout for mobile */
+
+	/* Hide bordered pseudo-elements on mobile - they can block icons */
+	.monaco-workbench .activitybar.bordered::before,
+	.monaco-workbench .activitybar.left.bordered::before,
+	.monaco-workbench .activitybar.right.bordered::before {
+		display: none !important;
+	}
+
+	/* Hide sidebar by default, show as overlay when activated */
+	.monaco-workbench .part.sidebar {
+		position: fixed !important;
+		top: 0 !important;
+		left: 0 !important;
+		bottom: 77px !important; /* Status Bar (22px) + Activity bar (54px) + gap (1px) */
+		width: 320px !important;
+		max-width: 80vw !important;
+		z-index: 999998 !important;
+		transform: translateX(-100%) !important;
+		transition: transform 0.3s ease-in-out !important;
+		background-color: var(--vscode-sideBar-background) !important;
+		border-right: 1px solid var(--vscode-sideBar-border) !important;
+		box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3) !important;
+		overflow-y: auto !important;
+		overflow-x: hidden !important;
+		opacity: 1 !important;
+		visibility: visible !important;
+	}
+
+	/* Ensure sidebar content is displayed correctly */
+	.monaco-workbench .part.sidebar .content {
+		width: 100% !important;
+		height: 100% !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		display: block !important;
+	}
+
+	/* Show sidebar when split-view-view is visible */
+	.monaco-workbench .split-view-view.visible ~ .part.sidebar,
+	.monaco-workbench .part.sidebar.visible,
+	.monaco-workbench:not(.nosidebar) .part.sidebar {
+		transform: translateX(0) !important;
+	}
+
+	/* Background overlay when sidebar is open */
+	.monaco-workbench .split-view-view.visible ~ .part.sidebar::before,
+	.monaco-workbench .part.sidebar.visible::before,
+	.monaco-workbench:not(.nosidebar) .part.sidebar::before {
+		content: '';
+		position: fixed;
+		top: 0;
+		left: 320px;
+		right: 0;
+		bottom: 54px;
+		background-color: rgba(0, 0, 0, 0.4);
+		z-index: -1;
+		pointer-events: auto;
+	}
+
+	/* Expand main content area: Editor and Panel fill entire screen */
+	.monaco-workbench .part.editor {
+		left: 0 !important;
+		margin-left: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+
+	.monaco-workbench .part.panel {
+		left: 0 !important;
+		margin-left: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+
+	/* Layout stability: maintain basic workbench structure */
+	.monaco-workbench:not(.sidebar-right) .part.editor {
+		left: 0 !important;
+		margin-left: 0 !important;
+	}
+
+	/* Adjust split view container */
+	.monaco-workbench .monaco-split-view2 {
+		width: 100% !important;
+	}
+
+	/* Ensure main content area is visible */
+	.monaco-workbench .part.editor .content,
+	.monaco-workbench .part.panel .content {
+		width: 100% !important;
+		left: 0 !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+	}
+
+	/* Horizontal layout for mobile - Evenly distributed all icons */
 	.monaco-workbench .activitybar > .content {
 		height: 54px !important;
+		display: flex !important;
 		flex-direction: row !important;
 		justify-content: space-evenly !important;
 		align-items: center !important;
-		padding: 5px 15px;
-		overflow-x: auto;
-		overflow-y: hidden;
+		padding: 0 8px !important;
+		overflow: visible !important;
+		position: relative !important;
+		z-index: 1000000 !important;
+		background: transparent !important;
+		box-sizing: border-box !important;
+		width: 100% !important;
+		gap: 0 !important;
 	}
-	
-	/* Mobile action bar layout */
-	.monaco-workbench .activitybar > .content .monaco-action-bar {
-		display: flex !important;
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: center !important;
-		flex-wrap: nowrap !important;
-	}
-	
-	/* Composite bar for mobile */
+
+	/* Main composite bar - Flex container for main icons */
 	.monaco-workbench .activitybar > .content > .composite-bar {
-		margin-bottom: 0 !important;
-		margin-right: 0 !important;
+		margin: 0 !important;
 		display: flex !important;
 		flex-direction: row !important;
 		align-items: center !important;
+		justify-content: space-evenly !important;
+		overflow: visible !important;
+		flex: 1 !important;
+		height: 100% !important;
+		padding: 0 !important;
+		gap: 0 !important;
+	}
+
+	/* Main action bar - evenly space main icons */
+	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar {
+		display: flex !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: space-evenly !important;
+		width: 100% !important;
+		height: 100% !important;
+		gap: 0 !important;
 		overflow: visible !important;
 	}
-	
+
+	/* Individual main action items - uniform spacing */
+	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar .action-item {
+		display: inline-flex !important;
+		margin: 0 !important;
+		flex: 1 !important;
+		flex-shrink: 0 !important;
+		position: relative !important;
+		z-index: 1000001 !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		min-width: 36px !important;
+		max-width: 48px !important;
+		height: 36px !important;
+		justify-content: center !important;
+		align-items: center !important;
+	}
+
+	/* Global actions container - Same spacing as main actions */
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar) {
+		display: flex !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: space-evenly !important;
+		gap: 0 !important;
+		flex-shrink: 0 !important;
+		position: relative !important;
+		z-index: 1000002 !important;
+		flex: 0.5 !important; /* Proportional to main actions for uniform spacing */
+	}
+
+	/* Global action bar styling - same distribution as main actions */
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar {
+		display: flex !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: space-evenly !important;
+		gap: 0 !important;
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	/* Global action items - Same size and spacing as main actions */
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar .action-item {
+		display: inline-flex !important;
+		margin: 0 !important;
+		flex: 1 !important;
+		flex-shrink: 0 !important;
+		position: relative !important;
+		z-index: 1000003 !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		min-width: 36px !important; /* Same as main actions */
+		max-width: 48px !important; /* Same as main actions */
+		height: 36px !important; /* Same as main actions */
+		justify-content: center !important;
+		align-items: center !important;
+	}
+
 	/* Hide menu bar on mobile to save space */
 	.monaco-workbench .activitybar .menubar {
-		display: none;
+		display: none !important;
 	}
-	
+
 	/* Ensure workbench adjusts for bottom bar */
 	.monaco-workbench {
 		padding-bottom: 54px !important;
@@ -140,12 +309,26 @@
 	.monaco-workbench .part.activitybar {
 		height: 48px !important; /* Even smaller on phones */
 	}
-	
+
 	.monaco-workbench .activitybar > .content {
 		height: 48px !important;
-		padding: 3px 10px; /* Less padding on small screens */
+		padding: 0 6px !important; /* Less padding on small screens */
 	}
-	
+
+	/* Adjust spacing for smaller screens - keep uniform distribution */
+	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar .action-item {
+		min-width: 32px !important;
+		max-width: 42px !important;
+		height: 32px !important;
+	}
+
+	/* Global actions - Same size as main actions on small screens */
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar .action-item {
+		min-width: 32px !important; /* Same as main actions */
+		max-width: 42px !important; /* Same as main actions */
+		height: 32px !important; /* Same as main actions */
+	}
+
 	.monaco-workbench {
 		padding-bottom: 48px !important;
 	}
@@ -156,13 +339,65 @@
 	.monaco-workbench .part.activitybar {
 		height: 44px !important; /* Smaller in landscape */
 	}
-	
+
 	.monaco-workbench .activitybar > .content {
 		height: 44px !important;
-		padding: 2px 10px;
+		padding: 0 6px !important;
 	}
-	
+
+	/* Tighter but still uniform spacing in landscape */
+	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar .action-item {
+		min-width: 30px !important;
+		max-width: 38px !important;
+		height: 30px !important;
+	}
+
+	/* Global actions - Same size as main actions in landscape */
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar .action-item {
+		min-width: 30px !important; /* Same as main actions */
+		max-width: 38px !important; /* Same as main actions */
+		height: 30px !important; /* Same as main actions */
+	}
+
 	.monaco-workbench {
 		padding-bottom: 44px !important;
+	}
+}
+
+/* Additional mobile sidebar styles */
+@media screen and (max-width: 768px) {
+	/* Sidebar overlay toggle related styles */
+
+	/* Show sidebar when activity bar icon is checked */
+	.monaco-workbench .activitybar .action-item.checked + * .part.sidebar,
+	.monaco-workbench .activitybar .action-item.active + * .part.sidebar,
+	.monaco-workbench .workbench-layout.sidebar-visible .part.sidebar {
+		transform: translateX(0) !important;
+	}
+
+	/* Background overlay click area */
+	.monaco-workbench .workbench-layout.sidebar-visible::after {
+		content: '';
+		position: fixed;
+		top: 0;
+		left: 320px;
+		right: 0;
+		bottom: 54px;
+		background-color: rgba(0, 0, 0, 0.4);
+		z-index: 999997;
+		pointer-events: auto;
+		cursor: pointer;
+	}
+
+	/* Additional selectors to detect sidebar active state */
+	.monaco-workbench:not(.nosidebar) .part.sidebar,
+	.monaco-workbench .part.sidebar.visible,
+	.monaco-workbench.sidebar-position-left:not(.sidebar-hidden) .part.sidebar {
+		transform: translateX(0) !important;
+	}
+
+	/* Show sidebar when split view is visible */
+	.monaco-workbench .split-view-view.visible .part.sidebar {
+		transform: translateX(0) !important;
 	}
 }

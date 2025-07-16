@@ -897,18 +897,10 @@
 .monaco-workbench .part.editor > .content .gettingStartedContainer .max-lines-3 {
 	/* Supported everywhere: https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp#browser_compatibility */
 	-webkit-line-clamp: 3;
+	line-clamp: 3;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-}
-
-.monaco-workbench .part.editor > .content .gettingStartedContainer .gettingStartedSlideDetails .getting-started-step .step-description-container .monaco-button {
-	height: 24px;
-	width: fit-content;
-	display: flex;
-	padding: 0 11px;
-	align-items: center;
-	min-width: max-content;
 }
 
 .monaco-workbench .part.editor > .content .gettingStartedContainer .hide-category-button {
@@ -1521,7 +1513,51 @@
 	font-size: 16px;
 }
 
-.monaco-workbench .part.editor > .content .gettingStartedContainer.newSlide .gettingStarted.showDetails .gettingStartedSlideCategories {
-	left: 100%;
-	opacity: 0;
+/* Mobile Responsive Design for showOnStartup class */
+@media screen and (max-width: 768px) {
+	/* Position showOnStartup above Status Bar with 5px gap */
+	.monaco-workbench .part.editor > .content .gettingStartedContainer .gettingStartedSlide .showOnStartup {
+		position: fixed !important;
+		bottom: 82px !important; /* Status Bar (22px) + gap (5px) + Activity Bar (54px) + margin (1px) */
+		left: 50% !important;
+		transform: translateX(-50%) !important;
+		z-index: 1000001 !important; /* Above Activity Bar but below Status Bar */
+		background-color: var(--vscode-editor-background) !important;
+		padding: 8px 16px !important;
+		border-radius: 6px !important;
+		border: 1px solid var(--vscode-welcomePage-tileBorder) !important;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+		max-width: calc(100vw - 32px) !important;
+		width: auto !important;
+		margin: 0 16px !important;
+		box-sizing: border-box !important;
+	}
+
+	/* Ensure checkbox and label alignment on mobile */
+	.monaco-workbench .part.editor > .content .gettingStartedContainer .gettingStartedSlide .showOnStartup label.caption {
+		font-size: 14px !important;
+		line-height: 1.4 !important;
+		margin-left: 8px !important;
+	}
+
+	/* Make checkbox more touch-friendly on mobile */
+	.monaco-workbench .part.editor > .content .gettingStartedContainer .gettingStartedSlide .getting-started-checkbox {
+		width: 20px !important;
+		height: 20px !important;
+		min-width: 20px !important;
+		min-height: 20px !important;
+	}
+}
+
+/* Additional mobile responsive adjustments for smaller screens */
+@media screen and (max-width: 480px) {
+	.monaco-workbench .part.editor > .content .gettingStartedContainer .gettingStartedSlide .showOnStartup {
+		padding: 6px 12px !important;
+		margin: 0 8px !important;
+		max-width: calc(100vw - 16px) !important;
+	}
+
+	.monaco-workbench .part.editor > .content .gettingStartedContainer .gettingStartedSlide .showOnStartup label.caption {
+		font-size: 13px !important;
+	}
 }
