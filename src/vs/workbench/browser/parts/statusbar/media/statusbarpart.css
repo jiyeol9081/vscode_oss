@@ -248,7 +248,7 @@
 	/* Move Status Bar above the bottom bars on mobile */
 	.monaco-workbench .part.statusbar {
 		position: fixed !important;
-		bottom: 55px !important; /* Above Activity Bar (54px) + 1px gap */
+		bottom: 54px !important; /* Above Activity Bar (54px) with no gap */
 		left: 0 !important;
 		right: 0 !important;
 		width: 100% !important;

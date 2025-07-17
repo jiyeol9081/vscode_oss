@@ -38,6 +38,8 @@ import { IExtensionService } from '../../../services/extensions/common/extension
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { SwitchCompositeViewAction } from '../compositeBarActions.js';
+import { MobileMenuButton } from './mobileMenuButton.js';
+import { ICommandService } from '../../../../platform/commands/common/commands.js';
 
 export class ActivitybarPart extends Part {
 
@@ -200,6 +202,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 	private readonly globalCompositeBar: GlobalCompositeBar | undefined;
 
 	private readonly keyboardNavigationDisposables = this._register(new DisposableStore());
+	private readonly mobileMenuButton: MobileMenuButton;
 
 	constructor(
 		options: IPaneCompositeBarOptions,
@@ -216,6 +219,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
+		@ICommandService private readonly commandService: ICommandService,
 	) {
 		super({
 			...options,
@@ -228,6 +232,9 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		if (showGlobalActivities) {
 			this.globalCompositeBar = this._register(instantiationService.createInstance(GlobalCompositeBar, () => this.getContextMenuActions(), (theme: IColorTheme) => this.options.colors(theme), this.options.activityHoverOptions));
 		}
+
+		// Initialize mobile menu button
+		this.mobileMenuButton = this._register(new MobileMenuButton(this.commandService));
 
 		// Register for configuration changes
 		this._register(this.configurationService.onDidChangeConfiguration(e => {
@@ -336,6 +343,9 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 
 		// View Containers action bar
 		this.compositeBarContainer = super.create(this.element);
+
+		// Add mobile menu button to composite bar container
+		this.mobileMenuButton.create(this.compositeBarContainer);
 
 		// Global action bar
 		if (this.globalCompositeBar) {

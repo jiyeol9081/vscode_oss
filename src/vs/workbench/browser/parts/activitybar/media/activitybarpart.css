@@ -63,6 +63,178 @@
 	width: 100%;
 	height: 35px;
 }
+
+/* Mobile Submenu Styles */
+.mobile-menu-container {
+	display: none; /* Hidden by default */
+}
+
+/* Mobile and small tablets - Move to bottom */
+@media screen and (max-width: 768px) {
+	/* Show mobile menu container only on mobile */
+	.mobile-menu-container {
+		display: flex !important;
+		order: -1; /* Place before file explorer */
+		align-items: center;
+		justify-content: center;
+	}
+
+.submenu-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	color: var(--vscode-activityBar-foreground);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
+	position: relative;
+	border-radius: 6px;
+}
+
+.submenu-button:hover {
+	background-color: var(--vscode-activityBar-activeBackground);
+}
+
+/* Mobile menu overlay - full screen modal */
+.mobile-menu-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 999999;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+/* Show overlay with fade animation */
+.mobile-menu-overlay.show {
+	opacity: 1;
+}
+
+.mobile-menu-content {
+	background-color: rgba(255, 255, 255, 0.1);
+	border: 2px solid #666666; /* Gray border */
+	width: auto;
+	height: auto;
+	padding: 24px;
+	transform: scale(1);
+	transition: transform 0.3s ease;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 12px; /* Same gap as activity bar */
+	flex-wrap: wrap;
+	border-radius: 8px;
+}
+
+.mobile-menu-overlay.show .mobile-menu-content {
+	transform: scale(1);
+}
+
+.mobile-menu-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	cursor: pointer;
+	color: white;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	font-size: 12px;
+	font-weight: 600;
+	min-height: 44px; /* Same as activity bar */
+	min-width: 44px; /* Same as activity bar */
+	max-height: 44px;
+	max-width: 44px;
+	border-radius: 6px; /* Same as activity bar buttons */
+	background-color: rgba(0, 0, 0, 0.8); /* Black background */
+	/* Start visible for debugging */
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	transition: all 0.3s ease;
+}
+
+/* Animation when menu item appears */
+.mobile-menu-item.animate-in {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
+.mobile-menu-item:hover {
+	background-color: var(--vscode-activityBar-activeBackground); /* Same as activity bar hover */
+	border-color: rgba(255, 255, 255, 0.6);
+	transform: none; /* No scaling like activity bar */
+}
+
+.mobile-menu-item:active {
+	background-color: var(--vscode-activityBar-activeBorder); /* Same as activity bar active */
+	transform: none; /* No scaling like activity bar */
+}
+
+.mobile-menu-icon {
+	margin-bottom: 2px;
+	font-size: 16px; /* Same as activity bar icons */
+	color: white;
+	width: 16px;
+	height: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mobile-menu-label {
+	font-size: 8px; /* Very small to fit in 44px height */
+	font-weight: 500;
+	text-align: center;
+	color: white;
+	margin-top: 1px;
+	line-height: 1;
+	max-width: 40px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Responsive design for mobile menu */
+@media screen and (max-width: 480px) {
+	/* On very small screens, hide labels and show only icons */
+	.mobile-menu-label {
+		display: none;
+	}
+
+	.mobile-menu-icon {
+		margin-bottom: 0;
+	}
+
+	.mobile-menu-item {
+		min-width: 40px;
+		max-width: 40px;
+		min-height: 40px;
+		max-height: 40px;
+	}
+
+	.mobile-menu-content {
+		gap: 8px;
+	}
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+	/* On medium mobile screens, smaller gaps */
+	.mobile-menu-content {
+		gap: 10px;
+	}
+}
 /* Mobile Responsive Design */
 
 /* Large tablets and small desktop screens - Keep left sidebar */
@@ -96,7 +268,7 @@
 		background-color: var(--vscode-activityBar-background) !important;
 		transform: translateZ(0) !important;
 		will-change: transform !important;
-		margin-top: 1px !important; /* Create gap between Status Bar and Activity Bar */
+		margin-top: 0 !important; /* No gap between Status Bar and Activity Bar */
 	}
 
 	/* Hide bordered pseudo-elements on mobile - they can block icons */
@@ -111,9 +283,9 @@
 		position: fixed !important;
 		top: 0 !important;
 		left: 0 !important;
-		bottom: 77px !important; /* Status Bar (22px) + Activity bar (54px) + gap (1px) */
-		width: 320px !important;
-		max-width: 80vw !important;
+		bottom: 75px !important; /* Status Bar (22px) + Activity bar (53px) with no gap */
+		width: 100vw !important; /* Full width */
+		max-width: 100vw !important; /* Full width */
 		z-index: 999998 !important;
 		transform: translateX(-100%) !important;
 		transition: transform 0.3s ease-in-out !important;
@@ -140,21 +312,6 @@
 	.monaco-workbench .part.sidebar.visible,
 	.monaco-workbench:not(.nosidebar) .part.sidebar {
 		transform: translateX(0) !important;
-	}
-
-	/* Background overlay when sidebar is open */
-	.monaco-workbench .split-view-view.visible ~ .part.sidebar::before,
-	.monaco-workbench .part.sidebar.visible::before,
-	.monaco-workbench:not(.nosidebar) .part.sidebar::before {
-		content: '';
-		position: fixed;
-		top: 0;
-		left: 320px;
-		right: 0;
-		bottom: 54px;
-		background-color: rgba(0, 0, 0, 0.4);
-		z-index: -1;
-		pointer-events: auto;
 	}
 
 	/* Expand main content area: Editor and Panel fill entire screen */
@@ -192,105 +349,104 @@
 		opacity: 1 !important;
 	}
 
-	/* Horizontal layout for mobile - Evenly distributed all icons */
+	/* Horizontal layout for mobile - All icons in a single flex container */
 	.monaco-workbench .activitybar > .content {
 		height: 54px !important;
 		display: flex !important;
 		flex-direction: row !important;
-		justify-content: space-evenly !important;
+		justify-content: space-evenly !important; /* Evenly distribute ALL icons */
 		align-items: center !important;
-		padding: 0 8px !important;
+		padding: 0 8px !important; /* Minimal side padding */
 		overflow: visible !important;
 		position: relative !important;
 		z-index: 1000000 !important;
 		background: transparent !important;
 		box-sizing: border-box !important;
 		width: 100% !important;
-		gap: 0 !important;
+		gap: 0 !important; /* No gap, let space-evenly handle spacing */
 	}
 
-	/* Main composite bar - Flex container for main icons */
+	/* Mobile menu container - treat as one icon in the flex layout */
+	.monaco-workbench .activitybar > .content .mobile-menu-container {
+		display: flex !important;
+		order: -10 !important; /* Ensure it's first */
+		flex: 0 0 auto !important; /* Don't grow or shrink */
+		align-items: center !important;
+		justify-content: center !important;
+		margin: 0 !important;
+	}
+
+	/* Main composite bar - also treat as individual icons */
 	.monaco-workbench .activitybar > .content > .composite-bar {
 		margin: 0 !important;
-		display: flex !important;
+		display: contents !important; /* This makes child elements participate in parent flex */
 		flex-direction: row !important;
 		align-items: center !important;
-		justify-content: space-evenly !important;
+		justify-content: center !important;
 		overflow: visible !important;
-		flex: 1 !important;
 		height: 100% !important;
 		padding: 0 !important;
 		gap: 0 !important;
 	}
 
-	/* Main action bar - evenly space main icons */
+	/* Main action bar - also use contents to flatten hierarchy */
 	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar {
-		display: flex !important;
+		display: contents !important; /* Flatten into parent flex container */
 		flex-direction: row !important;
 		align-items: center !important;
-		justify-content: space-evenly !important;
-		width: 100% !important;
+		justify-content: center !important;
+		width: auto !important;
 		height: 100% !important;
 		gap: 0 !important;
 		overflow: visible !important;
 	}
 
-	/* Individual main action items - uniform spacing */
-	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar .action-item {
+	/* ALL action items (main and global) - unified styling for uniform spacing */
+	.monaco-workbench .activitybar > .content .action-item,
+	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button {
 		display: inline-flex !important;
 		margin: 0 !important;
-		flex: 1 !important;
+		flex: 0 0 auto !important; /* Don't grow or shrink */
 		flex-shrink: 0 !important;
 		position: relative !important;
 		z-index: 1000001 !important;
 		visibility: visible !important;
 		opacity: 1 !important;
-		min-width: 36px !important;
-		max-width: 48px !important;
-		height: 36px !important;
+		min-width: 44px !important; /* Uniform size for all icons */
+		max-width: 44px !important;
+		height: 44px !important;
 		justify-content: center !important;
 		align-items: center !important;
+		order: 0 !important; /* Reset any specific ordering */
 	}
 
-	/* Global actions container - Same spacing as main actions */
+	/* Hide explorer since we have mobile menu with same functionality */
+	.monaco-workbench .activitybar > .content .composite-bar .action-item:first-child {
+		display: none !important;
+	}
+
+	/* Global actions container - also flatten into main flex container */
 	.monaco-workbench .activitybar > .content > div:not(.composite-bar) {
-		display: flex !important;
+		display: contents !important; /* Flatten into parent flex container */
 		flex-direction: row !important;
 		align-items: center !important;
-		justify-content: space-evenly !important;
+		justify-content: center !important;
 		gap: 0 !important;
 		flex-shrink: 0 !important;
 		position: relative !important;
 		z-index: 1000002 !important;
-		flex: 0.5 !important; /* Proportional to main actions for uniform spacing */
+		margin: 0 !important;
 	}
 
-	/* Global action bar styling - same distribution as main actions */
+	/* Global action bar styling - also flatten */
 	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar {
-		display: flex !important;
+		display: contents !important; /* Flatten into parent flex container */
 		flex-direction: row !important;
 		align-items: center !important;
-		justify-content: space-evenly !important;
-		gap: 0 !important;
-		width: 100% !important;
-		height: 100% !important;
-	}
-
-	/* Global action items - Same size and spacing as main actions */
-	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar .action-item {
-		display: inline-flex !important;
-		margin: 0 !important;
-		flex: 1 !important;
-		flex-shrink: 0 !important;
-		position: relative !important;
-		z-index: 1000003 !important;
-		visibility: visible !important;
-		opacity: 1 !important;
-		min-width: 36px !important; /* Same as main actions */
-		max-width: 48px !important; /* Same as main actions */
-		height: 36px !important; /* Same as main actions */
 		justify-content: center !important;
-		align-items: center !important;
+		gap: 0 !important;
+		width: auto !important;
+		height: 100% !important;
 	}
 
 	/* Hide menu bar on mobile to save space */
@@ -315,18 +471,12 @@
 		padding: 0 6px !important; /* Less padding on small screens */
 	}
 
-	/* Adjust spacing for smaller screens - keep uniform distribution */
-	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar .action-item {
-		min-width: 32px !important;
-		max-width: 42px !important;
-		height: 32px !important;
-	}
-
-	/* Global actions - Same size as main actions on small screens */
-	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar .action-item {
-		min-width: 32px !important; /* Same as main actions */
-		max-width: 42px !important; /* Same as main actions */
-		height: 32px !important; /* Same as main actions */
+	/* Adjust ALL icons uniformly for smaller screens */
+	.monaco-workbench .activitybar > .content .action-item,
+	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button {
+		min-width: 38px !important;
+		max-width: 38px !important;
+		height: 38px !important;
 	}
 
 	.monaco-workbench {
@@ -345,18 +495,12 @@
 		padding: 0 6px !important;
 	}
 
-	/* Tighter but still uniform spacing in landscape */
-	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar .action-item {
-		min-width: 30px !important;
-		max-width: 38px !important;
-		height: 30px !important;
-	}
-
-	/* Global actions - Same size as main actions in landscape */
-	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar .action-item {
-		min-width: 30px !important; /* Same as main actions */
-		max-width: 38px !important; /* Same as main actions */
-		height: 30px !important; /* Same as main actions */
+	/* All icons uniformly smaller in landscape */
+	.monaco-workbench .activitybar > .content .action-item,
+	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button {
+		min-width: 34px !important;
+		max-width: 34px !important;
+		height: 34px !important;
 	}
 
 	.monaco-workbench {
@@ -375,20 +519,6 @@
 		transform: translateX(0) !important;
 	}
 
-	/* Background overlay click area */
-	.monaco-workbench .workbench-layout.sidebar-visible::after {
-		content: '';
-		position: fixed;
-		top: 0;
-		left: 320px;
-		right: 0;
-		bottom: 54px;
-		background-color: rgba(0, 0, 0, 0.4);
-		z-index: 999997;
-		pointer-events: auto;
-		cursor: pointer;
-	}
-
 	/* Additional selectors to detect sidebar active state */
 	.monaco-workbench:not(.nosidebar) .part.sidebar,
 	.monaco-workbench .part.sidebar.visible,
@@ -400,4 +530,5 @@
 	.monaco-workbench .split-view-view.visible .part.sidebar {
 		transform: translateX(0) !important;
 	}
+}
 }
