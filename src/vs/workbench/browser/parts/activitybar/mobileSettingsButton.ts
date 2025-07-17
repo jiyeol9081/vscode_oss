@@ -7,22 +7,21 @@ import { Disposable } from '../../../../base/common/lifecycle.js';
 import { addDisposableListener, append, EventType, $, getActiveWindow } from '../../../../base/browser/dom.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 
-export interface IMobileMenuItem {
+export interface IMobileSettingsItem {
 	id: string;
 	label: string;
 	iconClass: string;
 	command: string;
 }
 
-export class MobileMenuButton extends Disposable {
+export class MobileSettingsButton extends Disposable {
 	private container: HTMLElement | undefined;
 	private menuOverlay: HTMLElement | undefined;
 	private menuVisible = false;
-	private mutationObserver: MutationObserver | undefined;
 	private submenuButton: HTMLElement | undefined;
-	private currentActiveView: IMobileMenuItem | undefined;
-	private defaultIcon = 'codicon-files';
-	private defaultTitle = 'Navigation Menu';
+	private currentActiveView: IMobileSettingsItem | undefined;
+	private defaultIcon = 'codicon-settings-gear';
+	private defaultTitle = 'Settings Menu';
 
 	constructor(
 		private readonly commandService: ICommandService
@@ -32,15 +31,12 @@ export class MobileMenuButton extends Disposable {
 
 	create(parent: HTMLElement): HTMLElement {
 		const targetWindow = getActiveWindow();
-		this.container = append(parent, $('.mobile-menu-container'));
+		this.container = append(parent, $('.mobile-settings-container'));
 
-		// Create submenu button with files icon (same as file explorer)
-		this.submenuButton = append(this.container, $('.submenu-button'));
-		this.submenuButton.className = `submenu-button codicon ${this.defaultIcon}`;
+		// Create submenu button with settings icon
+		this.submenuButton = append(this.container, $('.settings-button'));
+		this.submenuButton.className = `settings-button codicon ${this.defaultIcon}`;
 		this.submenuButton.setAttribute('title', this.defaultTitle);
-
-		// Hide explorer, search, and scm icons from activity bar on mobile
-		this.hideActivityBarIcons();
 
 		// Monitor sidebar state to reset button when sidebar closes
 		this.monitorSidebarState();
@@ -49,7 +45,7 @@ export class MobileMenuButton extends Disposable {
 		this._register(addDisposableListener(this.submenuButton, EventType.CLICK, async (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log('Mobile menu button clicked, current state:', this.menuVisible);
+			console.log('Mobile settings button clicked, current state:', this.menuVisible);
 
 			// If there's an active view, toggle it off and return to editor
 			if (this.currentActiveView) {
@@ -65,44 +61,44 @@ export class MobileMenuButton extends Disposable {
 		}));
 
 		// Create menu overlay directly in target window's document.body for full screen coverage
-		this.menuOverlay = append(targetWindow.document.body, $('.mobile-menu-overlay'));
+		this.menuOverlay = append(targetWindow.document.body, $('.mobile-settings-overlay'));
 		this.menuOverlay.style.display = 'none';
 
 		// Create menu content
-		const menuContent = append(this.menuOverlay, $('.mobile-menu-content'));
+		const menuContent = append(this.menuOverlay, $('.mobile-settings-content'));
 
-		// Menu items for Explorer, Search, Source Control
-		const menuItems: IMobileMenuItem[] = [
+		// Menu items for Extensions, Settings, and Accounts
+		const menuItems: IMobileSettingsItem[] = [
 			{
-				id: 'explorer',
-				label: 'Explorer',
-				iconClass: 'codicon-files',
-				command: 'workbench.view.explorer'
+				id: 'extensions',
+				label: 'Extensions',
+				iconClass: 'codicon-extensions',
+				command: 'workbench.view.extensions'
 			},
 			{
-				id: 'search',
-				label: 'Search',
-				iconClass: 'codicon-search',
-				command: 'workbench.view.search'
+				id: 'settings',
+				label: 'Settings',
+				iconClass: 'codicon-settings-gear',
+				command: 'workbench.action.openSettings'
 			},
 			{
-				id: 'scm',
-				label: 'Source Control',
-				iconClass: 'codicon-source-control',
-				command: 'workbench.view.scm'
+				id: 'accounts',
+				label: 'Accounts',
+				iconClass: 'codicon-account',
+				command: 'workbench.view.accounts'
 			}
 		];
 
 		// Create menu items with animation delay
 		menuItems.forEach((item, index) => {
-			const menuItem = append(menuContent, $('.mobile-menu-item'));
+			const menuItem = append(menuContent, $('.mobile-settings-item'));
 			menuItem.setAttribute('data-command', item.command);
 			menuItem.style.setProperty('--animation-delay', `${index * 100}ms`);
 
-			const icon = append(menuItem, $('.mobile-menu-icon'));
-			icon.className = `mobile-menu-icon codicon ${item.iconClass}`;
+			const icon = append(menuItem, $('.mobile-settings-icon'));
+			icon.className = `mobile-settings-icon codicon ${item.iconClass}`;
 
-			const label = append(menuItem, $('.mobile-menu-label'));
+			const label = append(menuItem, $('.mobile-settings-label'));
 			label.textContent = item.label;
 
 			// Add click handler
@@ -155,7 +151,7 @@ export class MobileMenuButton extends Disposable {
 		this.menuOverlay.classList.add('show');
 		this.menuVisible = true;
 
-		console.log('Menu should be visible now');
+		console.log('Settings menu should be visible now');
 		console.log('Overlay display:', this.menuOverlay.style.display);
 		console.log('Overlay classes:', this.menuOverlay.className);
 	}
@@ -168,98 +164,7 @@ export class MobileMenuButton extends Disposable {
 		this.menuOverlay.style.display = 'none';
 		this.menuOverlay.classList.remove('show');
 		this.menuVisible = false;
-		console.log('Menu hidden');
-	}
-
-	private hideActivityBarIcons(): void {
-		const targetWindow = getActiveWindow();
-
-		// Check if we're on mobile
-		const isMobile = () => targetWindow.innerWidth <= 768;
-
-		if (!isMobile()) {
-			return;
-		}
-
-		const hideIcons = () => {
-			const activityBarElement = targetWindow.document.querySelector('.part.activitybar');
-			if (!activityBarElement) {
-				return;
-			}
-
-			// Multiple approaches to find and hide the icons
-			const selectors = [
-				'.composite-bar .action-item',
-				'.composite-bar .monaco-action-bar .action-item',
-				'.composite-bar > .monaco-action-bar > .actions-container > .action-item',
-				'[aria-label*="Explorer"]',
-				'[aria-label*="Search"]',
-				'[aria-label*="Source Control"]',
-				'[title*="Explorer"]',
-				'[title*="Search"]',
-				'[title*="Source Control"]',
-				'[data-id="workbench.view.explorer"]',
-				'[data-id="workbench.view.search"]',
-				'[data-id="workbench.view.scm"]'
-			];
-
-			selectors.forEach(selector => {
-				const elements = activityBarElement.querySelectorAll(selector);
-				elements.forEach((element: Element, index: number) => {
-					const htmlElement = element as HTMLElement;
-
-					// For general selectors, only hide first 3
-					if (selector === '.composite-bar .action-item' ||
-						selector === '.composite-bar .monaco-action-bar .action-item' ||
-						selector === '.composite-bar > .monaco-action-bar > .actions-container > .action-item') {
-						if (index >= 3) {
-							return;
-						}
-					}
-
-					// Apply multiple hiding strategies
-					htmlElement.style.setProperty('display', 'none', 'important');
-					htmlElement.style.setProperty('visibility', 'hidden', 'important');
-					htmlElement.style.setProperty('opacity', '0', 'important');
-					htmlElement.style.setProperty('width', '0', 'important');
-					htmlElement.style.setProperty('height', '0', 'important');
-					htmlElement.style.setProperty('margin', '0', 'important');
-					htmlElement.style.setProperty('padding', '0', 'important');
-					htmlElement.style.setProperty('overflow', 'hidden', 'important');
-					htmlElement.style.setProperty('position', 'absolute', 'important');
-					htmlElement.style.setProperty('left', '-9999px', 'important');
-					htmlElement.style.setProperty('top', '-9999px', 'important');
-					htmlElement.style.setProperty('pointer-events', 'none', 'important');
-
-					// Also add a class to mark it as hidden
-					htmlElement.classList.add('mobile-hidden-icon');
-
-					// Remove from tab order
-					htmlElement.setAttribute('tabindex', '-1');
-					htmlElement.setAttribute('aria-hidden', 'true');
-				});
-			});
-
-			console.log('Hidden activity bar icons for mobile');
-		};
-
-		// Initial hide
-		setTimeout(hideIcons, 100);
-
-		// Set up MutationObserver to hide icons that might be added dynamically
-		const activityBarElement = targetWindow.document.querySelector('.part.activitybar');
-		if (activityBarElement) {
-			this.mutationObserver = new MutationObserver(() => {
-				hideIcons();
-			});
-
-			this.mutationObserver.observe(activityBarElement, {
-				childList: true,
-				subtree: true,
-				attributes: true,
-				attributeFilter: ['class', 'style']
-			});
-		}
+		console.log('Settings menu hidden');
 	}
 
 	private monitorSidebarState(): void {
@@ -288,10 +193,10 @@ export class MobileMenuButton extends Disposable {
 
 			// If sidebar is hidden and we have an active view, reset to default
 			if (isHidden && this.currentActiveView) {
-				console.log('Sidebar closed, resetting to default state');
+				console.log('Sidebar closed, resetting settings button to default state');
 				this.currentActiveView = undefined;
 				if (this.submenuButton) {
-					this.submenuButton.className = `submenu-button codicon ${this.defaultIcon}`;
+					this.submenuButton.className = `settings-button codicon ${this.defaultIcon}`;
 					this.submenuButton.setAttribute('title', this.defaultTitle);
 				}
 			}
@@ -311,21 +216,21 @@ export class MobileMenuButton extends Disposable {
 		});
 	}
 
-	private setActiveView(item: IMobileMenuItem): void {
+	private setActiveView(item: IMobileSettingsItem): void {
 		this.currentActiveView = item;
 		if (this.submenuButton) {
 			// Update the button icon and title to reflect the active view
-			this.submenuButton.className = `submenu-button codicon ${item.iconClass}`;
+			this.submenuButton.className = `settings-button codicon ${item.iconClass}`;
 			this.submenuButton.setAttribute('title', `${item.label} (tap to return to editor)`);
 		}
-		console.log(`Set active view to: ${item.label}`);
+		console.log(`Set active settings view to: ${item.label}`);
 	}
 
 	private async returnToEditor(): Promise<void> {
 		// Reset to default state
 		this.currentActiveView = undefined;
 		if (this.submenuButton) {
-			this.submenuButton.className = `submenu-button codicon ${this.defaultIcon}`;
+			this.submenuButton.className = `settings-button codicon ${this.defaultIcon}`;
 			this.submenuButton.setAttribute('title', this.defaultTitle);
 		}
 
@@ -333,9 +238,9 @@ export class MobileMenuButton extends Disposable {
 			// Close sidebar and focus on editor
 			await this.commandService.executeCommand('workbench.action.closeSidebar');
 			await this.commandService.executeCommand('workbench.action.focusActiveEditorGroup');
-			console.log('Returned to editor');
+			console.log('Returned to editor from settings');
 		} catch (error) {
-			console.error('Failed to return to editor:', error);
+			console.error('Failed to return to editor from settings:', error);
 		}
 	}
 
@@ -344,12 +249,6 @@ export class MobileMenuButton extends Disposable {
 	}
 
 	override dispose(): void {
-		// Clean up MutationObserver
-		if (this.mutationObserver) {
-			this.mutationObserver.disconnect();
-			this.mutationObserver = undefined;
-		}
-
 		// Clean up menu overlay from document.body
 		if (this.menuOverlay && this.menuOverlay.parentNode) {
 			this.menuOverlay.parentNode.removeChild(this.menuOverlay);

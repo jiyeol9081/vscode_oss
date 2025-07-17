@@ -39,6 +39,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { SwitchCompositeViewAction } from '../compositeBarActions.js';
 import { MobileMenuButton } from './mobileMenuButton.js';
+import { MobileSettingsButton } from './mobileSettingsButton.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 
 export class ActivitybarPart extends Part {
@@ -203,6 +204,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 
 	private readonly keyboardNavigationDisposables = this._register(new DisposableStore());
 	private readonly mobileMenuButton: MobileMenuButton;
+	private readonly mobileSettingsButton: MobileSettingsButton;
 
 	constructor(
 		options: IPaneCompositeBarOptions,
@@ -235,6 +237,9 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 
 		// Initialize mobile menu button
 		this.mobileMenuButton = this._register(new MobileMenuButton(this.commandService));
+
+		// Initialize mobile settings button
+		this.mobileSettingsButton = this._register(new MobileSettingsButton(this.commandService));
 
 		// Register for configuration changes
 		this._register(this.configurationService.onDidChangeConfiguration(e => {
@@ -347,6 +352,12 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		// Add mobile menu button to composite bar container
 		this.mobileMenuButton.create(this.compositeBarContainer);
 
+		// Add mobile copilot button in the middle
+		this.createMobileCopilotButton(this.compositeBarContainer);
+
+		// Add mobile settings button to composite bar container
+		this.mobileSettingsButton.create(this.compositeBarContainer);
+
 		// Global action bar
 		if (this.globalCompositeBar) {
 			this.globalCompositeBar.create(this.element);
@@ -389,6 +400,24 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		}
 
 		return actions;
+	}
+
+	private createMobileCopilotButton(container: HTMLElement): void {
+		// Create mobile copilot container
+		const copilotContainer = append(container, $('.mobile-copilot-container'));
+
+		// Create copilot button
+		const copilotButton = append(copilotContainer, $('button.copilot-button'));
+		copilotButton.setAttribute('aria-label', 'GitHub Copilot');
+		copilotButton.setAttribute('title', 'GitHub Copilot');
+
+		// Add codicon for copilot
+		append(copilotButton, $('.codicon.codicon-copilot'));
+
+		// Add click handler to open Copilot
+		this._register(addDisposableListener(copilotButton, EventType.CLICK, () => {
+			this.commandService.executeCommand('github.copilot.chat.open');
+		}));
 	}
 
 }

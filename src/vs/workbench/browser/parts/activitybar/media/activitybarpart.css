@@ -69,22 +69,69 @@
 	display: none; /* Hidden by default */
 }
 
+.mobile-settings-container {
+	display: none; /* Hidden by default */
+}
+
+.mobile-copilot-container {
+	display: none; /* Hidden by default */
+}
+
 /* Mobile and small tablets - Move to bottom */
 @media screen and (max-width: 768px) {
-	/* Show mobile menu container only on mobile */
-	.mobile-menu-container {
+
+	/* Unified activity bar container for mobile */
+	.monaco-workbench .activitybar > .content > .activitybar-container {
 		display: flex !important;
-		order: -1; /* Place before file explorer */
-		align-items: center;
-		justify-content: center;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: space-evenly !important;
+		width: 100% !important;
+		height: 100% !important;
+		gap: 0 !important;
 	}
 
-.submenu-button {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 44px;
-	height: 44px;
+	/* Flatten all previous icon containers into this */
+	.monaco-workbench .activitybar > .content > .composite-bar,
+	.monaco-workbench .activitybar > .content .mobile-menu-container,
+	.monaco-workbench .activitybar > .content > div:not(.activitybar-container) {
+		display: contents !important;
+	}
+	/* Show mobile menu containers with identical positioning */
+	.mobile-menu-container,
+	.mobile-settings-container,
+	.mobile-copilot-container {
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		width: 44px !important;
+		height: 44px !important;
+		flex: 0 0 44px !important;
+		box-sizing: border-box !important;
+		position: relative !important;
+		vertical-align: middle !important;
+	}
+
+	.mobile-menu-container {
+		order: -1; /* Place before file explorer */
+	}
+
+	.mobile-settings-container {
+		order: 1000; /* Place after other icons */
+	}
+
+	.mobile-copilot-container {
+		order: 500; /* Place in the middle */
+	}
+
+.submenu-button,
+.settings-button,
+.copilot-button {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 44px !important;
+	height: 44px !important;
 	color: var(--vscode-activityBar-foreground);
 	background: transparent;
 	border: none;
@@ -92,9 +139,16 @@
 	font-size: 16px;
 	position: relative;
 	border-radius: 6px;
+	box-sizing: border-box !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	vertical-align: middle !important;
+	line-height: 44px !important;
 }
 
-.submenu-button:hover {
+.submenu-button:hover,
+.settings-button:hover,
+.copilot-button:hover {
 	background-color: var(--vscode-activityBar-activeBackground);
 }
 
@@ -116,8 +170,30 @@
 	transition: opacity 0.3s ease-in-out;
 }
 
+/* Mobile settings overlay - full screen modal */
+.mobile-settings-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 999999;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
 /* Show overlay with fade animation */
 .mobile-menu-overlay.show {
+	opacity: 1;
+}
+
+.mobile-settings-overlay.show {
 	opacity: 1;
 }
 
@@ -138,11 +214,55 @@
 	border-radius: 8px;
 }
 
+.mobile-settings-content {
+	background-color: rgba(255, 255, 255, 0.1);
+	border: 2px solid #666666; /* Gray border */
+	width: auto;
+	height: auto;
+	padding: 24px;
+	transform: scale(1);
+	transition: transform 0.3s ease;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 12px; /* Same gap as activity bar */
+	flex-wrap: wrap;
+	border-radius: 8px;
+}
+
 .mobile-menu-overlay.show .mobile-menu-content {
 	transform: scale(1);
 }
 
+.mobile-settings-overlay.show .mobile-settings-content {
+	transform: scale(1);
+}
+
 .mobile-menu-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	cursor: pointer;
+	color: white;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	font-size: 12px;
+	font-weight: 600;
+	min-height: 44px; /* Same as activity bar */
+	min-width: 44px; /* Same as activity bar */
+	max-height: 44px;
+	max-width: 44px;
+	border-radius: 6px; /* Same as activity bar buttons */
+	background-color: rgba(0, 0, 0, 0.8); /* Black background */
+	/* Start visible for debugging */
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	transition: all 0.3s ease;
+}
+
+.mobile-settings-item {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -171,39 +291,38 @@
 	transform: translateY(0) scale(1);
 }
 
-.mobile-menu-item:hover {
-	background-color: var(--vscode-activityBar-activeBackground); /* Same as activity bar hover */
-	border-color: rgba(255, 255, 255, 0.6);
-	transform: none; /* No scaling like activity bar */
+.mobile-menu-item:hover,
+.mobile-settings-item:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.5);
+	transform: scale(1.05);
 }
 
-.mobile-menu-item:active {
-	background-color: var(--vscode-activityBar-activeBorder); /* Same as activity bar active */
-	transform: none; /* No scaling like activity bar */
+.mobile-menu-item:active,
+.mobile-settings-item:active {
+	transform: scale(0.95);
+	background-color: rgba(255, 255, 255, 0.15);
 }
 
-.mobile-menu-icon {
-	margin-bottom: 2px;
-	font-size: 16px; /* Same as activity bar icons */
-	color: white;
-	width: 16px;
-	height: 16px;
+.mobile-menu-icon,
+.mobile-settings-icon {
+	width: 22px;
+	height: 22px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	margin-bottom: 2px;
 }
 
-.mobile-menu-label {
-	font-size: 8px; /* Very small to fit in 44px height */
-	font-weight: 500;
-	text-align: center;
-	color: white;
-	margin-top: 1px;
+.mobile-menu-label,
+.mobile-settings-label {
+	font-size: 9px;
 	line-height: 1;
-	max-width: 40px;
+	text-align: center;
+	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	max-width: 38px;
 }
 
 /* Responsive design for mobile menu */
@@ -354,99 +473,147 @@
 		height: 54px !important;
 		display: flex !important;
 		flex-direction: row !important;
-		justify-content: space-evenly !important; /* Evenly distribute ALL icons */
+		justify-content: space-around !important; /* Changed from space-evenly to space-around for better distribution */
 		align-items: center !important;
-		padding: 0 8px !important; /* Minimal side padding */
+		padding: 0 8px !important;
 		overflow: visible !important;
 		position: relative !important;
 		z-index: 1000000 !important;
 		background: transparent !important;
 		box-sizing: border-box !important;
 		width: 100% !important;
-		gap: 0 !important; /* No gap, let space-evenly handle spacing */
-	}
-
-	/* Mobile menu container - treat as one icon in the flex layout */
-	.monaco-workbench .activitybar > .content .mobile-menu-container {
-		display: flex !important;
-		order: -10 !important; /* Ensure it's first */
-		flex: 0 0 auto !important; /* Don't grow or shrink */
-		align-items: center !important;
-		justify-content: center !important;
-		margin: 0 !important;
-	}
-
-	/* Main composite bar - also treat as individual icons */
-	.monaco-workbench .activitybar > .content > .composite-bar {
-		margin: 0 !important;
-		display: contents !important; /* This makes child elements participate in parent flex */
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: center !important;
-		overflow: visible !important;
-		height: 100% !important;
-		padding: 0 !important;
 		gap: 0 !important;
-	}
-
-	/* Main action bar - also use contents to flatten hierarchy */
-	.monaco-workbench .activitybar > .content > .composite-bar > .monaco-action-bar {
-		display: contents !important; /* Flatten into parent flex container */
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: center !important;
-		width: auto !important;
-		height: 100% !important;
-		gap: 0 !important;
-		overflow: visible !important;
 	}
 
 	/* ALL action items (main and global) - unified styling for uniform spacing */
-	.monaco-workbench .activitybar > .content .action-item,
-	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button {
+	.monaco-workbench .activitybar > .content .activitybar-container .action-item,
+	.monaco-workbench .activitybar > .content .activitybar-container .mobile-menu-container .submenu-button,
+	.monaco-workbench .activitybar > .content .activitybar-container .mobile-copilot-container .copilot-button,
+	.monaco-workbench .activitybar > .content .activitybar-container .mobile-settings-container .settings-button {
 		display: inline-flex !important;
 		margin: 0 !important;
-		flex: 0 0 auto !important; /* Don't grow or shrink */
+		flex: 0 0 44px !important; /* Fixed width for consistent sizing */
 		flex-shrink: 0 !important;
 		position: relative !important;
 		z-index: 1000001 !important;
 		visibility: visible !important;
 		opacity: 1 !important;
-		min-width: 44px !important; /* Uniform size for all icons */
+		min-width: 44px !important;
 		max-width: 44px !important;
+		width: 44px !important; /* Explicit width */
 		height: 44px !important;
 		justify-content: center !important;
 		align-items: center !important;
-		order: 0 !important; /* Reset any specific ordering */
+		order: 0 !important;
+		box-sizing: border-box !important; /* Ensure consistent box model */
 	}
 
-	/* Hide explorer since we have mobile menu with same functionality */
-	.monaco-workbench .activitybar > .content .composite-bar .action-item:first-child {
+	/* Hide explorer, search, scm, extensions, settings, and accounts icons since we have mobile menus with same functionality */
+	/* Use multiple selectors to ensure these icons are completely hidden */
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[aria-label*="Explorer"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[aria-label*="Search"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[aria-label*="Source Control"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[aria-label*="Extensions"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[aria-label*="Settings"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[aria-label*="Accounts"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[title*="Explorer"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[title*="Search"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[title*="Source Control"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[title*="Extensions"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[title*="Settings"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item[title*="Accounts"],
+	.monaco-workbench .activitybar > .content .composite-bar .action-item:first-child,
+	.monaco-workbench .activitybar > .content .composite-bar .action-item:nth-child(2),
+	.monaco-workbench .activitybar > .content .composite-bar .action-item:nth-child(3),
+	.monaco-workbench .activitybar > .content .composite-bar .monaco-action-bar .action-item:first-child,
+	.monaco-workbench .activitybar > .content .composite-bar .monaco-action-bar .action-item:nth-child(2),
+	.monaco-workbench .activitybar > .content .composite-bar .monaco-action-bar .action-item:nth-child(3),
+	/* Also target by specific view container classes if they exist */
+	.monaco-workbench .activitybar .action-item[data-id="workbench.view.explorer"],
+	.monaco-workbench .activitybar .action-item[data-id="workbench.view.search"],
+	.monaco-workbench .activitybar .action-item[data-id="workbench.view.scm"],
+	.monaco-workbench .activitybar .action-item[data-id="workbench.view.extensions"],
+	.monaco-workbench .activitybar .action-item[data-id="workbench.view.extension"],
+	.monaco-workbench .activitybar .action-item[data-id="workbench.view.accounts"],
+	/* Additional comprehensive selectors */
+	.monaco-workbench .activitybar > .content .composite-bar > .monaco-action-bar > .actions-container > .action-item:nth-child(1),
+	.monaco-workbench .activitybar > .content .composite-bar > .monaco-action-bar > .actions-container > .action-item:nth-child(2),
+	.monaco-workbench .activitybar > .content .composite-bar > .monaco-action-bar > .actions-container > .action-item:nth-child(3),
+	/* Target all possible variations */
+	.monaco-workbench .activitybar .composite-bar .action-item:first-of-type,
+	.monaco-workbench .activitybar .composite-bar .action-item:nth-of-type(2),
+	.monaco-workbench .activitybar .composite-bar .action-item:nth-of-type(3),
+	/* Global action items that might contain extensions/settings/accounts - more comprehensive */
+	.monaco-workbench .activitybar .global-activity[aria-label*="Extensions"],
+	.monaco-workbench .activitybar .global-activity[aria-label*="Settings"],
+	.monaco-workbench .activitybar .global-activity[aria-label*="Accounts"],
+	.monaco-workbench .activitybar .global-activity[title*="Extensions"],
+	.monaco-workbench .activitybar .global-activity[title*="Settings"],
+	.monaco-workbench .activitybar .global-activity[title*="Accounts"],
+	.monaco-workbench .activitybar .global-activity .action-item[aria-label*="Extensions"],
+	.monaco-workbench .activitybar .global-activity .action-item[aria-label*="Settings"],
+	.monaco-workbench .activitybar .global-activity .action-item[aria-label*="Accounts"],
+	.monaco-workbench .activitybar .global-activity .action-item[title*="Extensions"],
+	.monaco-workbench .activitybar .global-activity .action-item[title*="Settings"],
+	.monaco-workbench .activitybar .global-activity .action-item[title*="Accounts"],
+	/* Target global composite bar */
+	.monaco-workbench .activitybar > .content > .global-activity[aria-label*="Extensions"],
+	.monaco-workbench .activitybar > .content > .global-activity[aria-label*="Settings"],
+	.monaco-workbench .activitybar > .content > .global-activity[aria-label*="Accounts"],
+	.monaco-workbench .activitybar > .content > .global-activity[title*="Extensions"],
+	.monaco-workbench .activitybar > .content > .global-activity[title*="Settings"],
+	.monaco-workbench .activitybar > .content > .global-activity[title*="Accounts"],
+	/* Target any action item in global sections */
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar):not(.mobile-menu-container):not(.mobile-settings-container) .action-item[aria-label*="Extensions"],
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar):not(.mobile-menu-container):not(.mobile-settings-container) .action-item[aria-label*="Settings"],
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar):not(.mobile-menu-container):not(.mobile-settings-container) .action-item[aria-label*="Accounts"],
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar):not(.mobile-menu-container):not(.mobile-settings-container) .action-item[title*="Extensions"],
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar):not(.mobile-menu-container):not(.mobile-settings-container) .action-item[title*="Settings"],
+	.monaco-workbench .activitybar > .content > div:not(.composite-bar):not(.mobile-menu-container):not(.mobile-settings-container) .action-item[title*="Accounts"],
+	/* JavaScript added class */
+	.monaco-workbench .activitybar .mobile-hidden-icon {
 		display: none !important;
-	}
-
-	/* Global actions container - also flatten into main flex container */
-	.monaco-workbench .activitybar > .content > div:not(.composite-bar) {
-		display: contents !important; /* Flatten into parent flex container */
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: center !important;
-		gap: 0 !important;
-		flex-shrink: 0 !important;
-		position: relative !important;
-		z-index: 1000002 !important;
+		visibility: hidden !important;
+		opacity: 0 !important;
+		width: 0 !important;
+		height: 0 !important;
 		margin: 0 !important;
+		padding: 0 !important;
+		overflow: hidden !important;
+		position: absolute !important;
+		left: -9999px !important;
+		top: -9999px !important;
+		pointer-events: none !important;
 	}
 
-	/* Global action bar styling - also flatten */
-	.monaco-workbench .activitybar > .content > div:not(.composite-bar) .monaco-action-bar {
-		display: contents !important; /* Flatten into parent flex container */
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: center !important;
-		gap: 0 !important;
-		width: auto !important;
-		height: 100% !important;
+	/* Global actions container - flatten into main container */
+	.monaco-workbench .activitybar > .content .activitybar-container > div:not(.action-item):not(.mobile-menu-container):not(.mobile-copilot-container):not(.mobile-settings-container) {
+		display: contents !important;
+	}
+
+	/* Additional brute force hiding for Extensions, Settings, and Accounts icons */
+	.monaco-workbench .activitybar .action-item .codicon-extensions,
+	.monaco-workbench .activitybar .action-item .codicon-settings-gear,
+	.monaco-workbench .activitybar .action-item .codicon-settings,
+	.monaco-workbench .activitybar .action-item .codicon-account,
+	.monaco-workbench .activitybar .action-item[title*="Manage"],
+	.monaco-workbench .activitybar .action-item[aria-label*="Manage"],
+	.monaco-workbench .activitybar .action-item[aria-label*="Account and Settings"],
+	.monaco-workbench .activitybar .action-item.settings-activity,
+	.monaco-workbench .activitybar .action-item.extensions-activity,
+	.monaco-workbench .activitybar .action-item.accounts-activity {
+		display: none !important;
+		visibility: hidden !important;
+		opacity: 0 !important;
+		width: 0 !important;
+		height: 0 !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		overflow: hidden !important;
+		position: absolute !important;
+		left: -9999px !important;
+		top: -9999px !important;
+		pointer-events: none !important;
 	}
 
 	/* Hide menu bar on mobile to save space */
@@ -473,10 +640,36 @@
 
 	/* Adjust ALL icons uniformly for smaller screens */
 	.monaco-workbench .activitybar > .content .action-item,
-	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button {
+	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button,
+	.monaco-workbench .activitybar > .content .mobile-copilot-container .copilot-button,
+	.monaco-workbench .activitybar > .content .mobile-settings-container .settings-button {
 		min-width: 38px !important;
 		max-width: 38px !important;
+		width: 38px !important;
 		height: 38px !important;
+		flex: 0 0 38px !important;
+	}
+
+	/* Adjust container sizes for smaller screens */
+	.monaco-workbench .activitybar > .content .mobile-menu-container,
+	.monaco-workbench .activitybar > .content .mobile-copilot-container,
+	.monaco-workbench .activitybar > .content .mobile-settings-container {
+		width: 38px !important;
+		height: 38px !important;
+		flex: 0 0 38px !important;
+		align-items: center !important;
+		justify-content: center !important;
+		vertical-align: middle !important;
+	}
+
+	/* Adjust button sizes for smaller screens */
+	.submenu-button,
+	.settings-button,
+	.copilot-button {
+		width: 38px !important;
+		height: 38px !important;
+		line-height: 38px !important;
+		flex: 0 0 38px !important;
 	}
 
 	.monaco-workbench {
@@ -497,10 +690,36 @@
 
 	/* All icons uniformly smaller in landscape */
 	.monaco-workbench .activitybar > .content .action-item,
-	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button {
+	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button,
+	.monaco-workbench .activitybar > .content .mobile-copilot-container .copilot-button,
+	.monaco-workbench .activitybar > .content .mobile-settings-container .settings-button {
 		min-width: 34px !important;
 		max-width: 34px !important;
+		width: 34px !important;
 		height: 34px !important;
+		flex: 0 0 34px !important;
+	}
+
+	/* Adjust container sizes for landscape */
+	.monaco-workbench .activitybar > .content .mobile-menu-container,
+	.monaco-workbench .activitybar > .content .mobile-copilot-container,
+	.monaco-workbench .activitybar > .content .mobile-settings-container {
+		width: 34px !important;
+		height: 34px !important;
+		flex: 0 0 34px !important;
+		align-items: center !important;
+		justify-content: center !important;
+		vertical-align: middle !important;
+	}
+
+	/* Adjust button sizes for landscape */
+	.submenu-button,
+	.settings-button,
+	.copilot-button {
+		width: 34px !important;
+		height: 34px !important;
+		line-height: 34px !important;
+		flex: 0 0 34px !important;
 	}
 
 	.monaco-workbench {
@@ -529,6 +748,132 @@
 	/* Show sidebar when split view is visible */
 	.monaco-workbench .split-view-view.visible .part.sidebar {
 		transform: translateX(0) !important;
+	}
+
+	/* Animation staggering for mobile settings submenu items */
+	.mobile-settings-content.show .mobile-settings-item:nth-child(1) {
+		animation-delay: 0.1s;
+	}
+
+	.mobile-settings-content.show .mobile-settings-item:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+
+	.mobile-settings-content.show .mobile-settings-item:nth-child(3) {
+		animation-delay: 0.3s;
+	}
+
+	/* 5-Icon Mobile Layout: Home -> File submenu -> Copilot -> Debug -> Settings submenu */
+	.activitybar .content {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-evenly;
+		align-items: center;
+		width: 100%;
+		padding: 0 10px;
+	}
+
+	/* Icon ordering */
+	.activitybar .mobile-home-container {
+		order: 1;
+	}
+
+	.activitybar .mobile-menu-container {
+		order: 2;
+	}
+
+	.activitybar .mobile-copilot-container {
+		order: 3;
+	}
+
+	.activitybar .mobile-debug-container {
+		order: 4;
+	}
+
+	.activitybar .mobile-settings-container {
+		order: 5;
+	}
+
+	/* Mobile button containers */
+	.mobile-home-container,
+	.mobile-copilot-container,
+	.mobile-debug-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+	}
+
+	/* Mobile buttons styling */
+	.home-button,
+	.copilot-button,
+	.debug-button {
+		background: none;
+		border: none;
+		color: var(--vscode-activityBar-foreground);
+		cursor: pointer;
+		padding: 6px;
+		border-radius: 6px;
+		transition: background-color 0.1s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 44px;
+		min-height: 44px;
+	}
+
+	.home-button:hover,
+	.copilot-button:hover,
+	.debug-button:hover {
+		background-color: var(--vscode-activityBar-activeBackground);
+	}
+
+	.home-button .codicon,
+	.copilot-button .codicon,
+	.debug-button .codicon {
+		font-size: 22px;
+	}
+
+	/* Responsive sizing for smaller screens */
+	@media screen and (max-width: 600px) {
+		.home-button,
+		.menu-button,
+		.copilot-button,
+		.debug-button,
+		.settings-button {
+			min-width: 38px;
+			min-height: 38px;
+			padding: 5px;
+		}
+
+		.home-button .codicon,
+		.menu-button .codicon,
+		.copilot-button .codicon,
+		.debug-button .codicon,
+		.settings-button .codicon {
+			font-size: 20px;
+		}
+	}
+
+	@media screen and (max-width: 480px) {
+		.home-button,
+		.menu-button,
+		.copilot-button,
+		.debug-button,
+		.settings-button {
+			min-width: 34px;
+			min-height: 34px;
+			padding: 4px;
+		}
+
+		.home-button .codicon,
+		.menu-button .codicon,
+		.copilot-button .codicon,
+		.debug-button .codicon,
+		.settings-button .codicon {
+			font-size: 18px;
+		}
 	}
 }
 }
