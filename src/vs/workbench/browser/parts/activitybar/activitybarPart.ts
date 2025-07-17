@@ -15,7 +15,7 @@ import { ToggleSidebarPositionAction, ToggleSidebarVisibilityAction } from '../.
 import { IThemeService, IColorTheme, registerThemingParticipant } from '../../../../platform/theme/common/themeService.js';
 import { ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER, ACTIVITY_BAR_FOREGROUND, ACTIVITY_BAR_ACTIVE_BORDER, ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND, ACTIVITY_BAR_INACTIVE_FOREGROUND, ACTIVITY_BAR_ACTIVE_BACKGROUND, ACTIVITY_BAR_DRAG_AND_DROP_BORDER, ACTIVITY_BAR_ACTIVE_FOCUS_BORDER } from '../../../common/theme.js';
 import { activeContrastBorder, contrastBorder, focusBorder } from '../../../../platform/theme/common/colorRegistry.js';
-import { addDisposableListener, append, EventType, isAncestor, $, clearNode } from '../../../../base/browser/dom.js';
+import { addDisposableListener, append, EventType, isAncestor, $, clearNode, getActiveWindow } from '../../../../base/browser/dom.js';
 import { assertReturnsDefined } from '../../../../base/common/types.js';
 import { CustomMenubarControl } from '../titlebar/menubarControl.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
@@ -206,6 +206,11 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 	private readonly mobileMenuButton: MobileMenuButton;
 	private readonly mobileSettingsButton: MobileSettingsButton;
 
+	// Mobile debug button state
+	private debugButton: HTMLElement | undefined;
+	private isDebugActive = false;
+	private defaultDebugTitle = 'Run and Debug';
+
 	constructor(
 		options: IPaneCompositeBarOptions,
 		part: Parts,
@@ -349,11 +354,17 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		// View Containers action bar
 		this.compositeBarContainer = super.create(this.element);
 
+		// Add mobile home button (leftmost position)
+		this.createMobileHomeButton(this.compositeBarContainer);
+
 		// Add mobile menu button to composite bar container
 		this.mobileMenuButton.create(this.compositeBarContainer);
 
 		// Add mobile copilot button in the middle
 		this.createMobileCopilotButton(this.compositeBarContainer);
+
+		// Add mobile debug button next to copilot
+		this.createMobileDebugButton(this.compositeBarContainer);
 
 		// Add mobile settings button to composite bar container
 		this.mobileSettingsButton.create(this.compositeBarContainer);
@@ -418,6 +429,125 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		this._register(addDisposableListener(copilotButton, EventType.CLICK, () => {
 			this.commandService.executeCommand('github.copilot.chat.open');
 		}));
+	}
+
+	private createMobileHomeButton(container: HTMLElement): void {
+		// Create mobile home container
+		const homeContainer = append(container, $('.mobile-home-container'));
+
+		// Create home button
+		const homeButton = append(homeContainer, $('button.home-button'));
+		homeButton.setAttribute('aria-label', 'Home');
+		homeButton.setAttribute('title', 'Go to Home');
+
+		// Add codicon for home
+		append(homeButton, $('.codicon.codicon-home'));
+
+		// Add click handler to go to home
+		this._register(addDisposableListener(homeButton, EventType.CLICK, () => {
+			this.commandService.executeCommand('workbench.action.showCommands');
+		}));
+	}
+
+	private createMobileDebugButton(container: HTMLElement): void {
+		// Create mobile debug container
+		const debugContainer = append(container, $('.mobile-debug-container'));
+
+		// Create debug button
+		this.debugButton = append(debugContainer, $('button.debug-button'));
+		this.debugButton.setAttribute('aria-label', 'Debug');
+		this.debugButton.setAttribute('title', this.defaultDebugTitle);
+
+		// Add codicon for debug
+		append(this.debugButton, $('.codicon.codicon-debug-alt'));
+
+		// Monitor sidebar state to reset button when sidebar closes
+		this.monitorDebugSidebarState();
+
+		// Add click handler with toggle functionality
+		this._register(addDisposableListener(this.debugButton, EventType.CLICK, async () => {
+			if (this.isDebugActive) {
+				// Debug view is active, return to editor
+				await this.returnToEditorFromDebug();
+			} else {
+				// No debug view active, open debug view
+				try {
+					await this.commandService.executeCommand('workbench.view.debug');
+					this.setDebugActive(true);
+					console.log('Debug view opened');
+				} catch (error) {
+					console.error('Failed to open debug view:', error);
+				}
+			}
+		}));
+	}
+
+	private setDebugActive(active: boolean): void {
+		this.isDebugActive = active;
+		if (this.debugButton) {
+			if (active) {
+				this.debugButton.setAttribute('title', 'Debug (tap to return to editor)');
+			} else {
+				this.debugButton.setAttribute('title', this.defaultDebugTitle);
+			}
+		}
+		console.log(`Debug active state set to: ${active}`);
+	}
+
+	private async returnToEditorFromDebug(): Promise<void> {
+		this.setDebugActive(false);
+		try {
+			await this.commandService.executeCommand('workbench.action.closeSidebar');
+			await this.commandService.executeCommand('workbench.action.focusActiveEditorGroup');
+			console.log('Returned to editor from debug');
+		} catch (error) {
+			console.error('Failed to return to editor from debug:', error);
+		}
+	}
+
+	private monitorDebugSidebarState(): void {
+		const targetWindow = getActiveWindow();
+		const isMobile = () => targetWindow.innerWidth <= 768;
+
+		if (!isMobile()) {
+			return;
+		}
+
+		// Find the sidebar element
+		const sidebar = targetWindow.document.querySelector('.part.sidebar');
+		if (!sidebar) {
+			return;
+		}
+
+		// Create a MutationObserver to watch for style changes
+		const sidebarObserver = new MutationObserver(() => {
+			const computedStyle = targetWindow.getComputedStyle(sidebar);
+			const transform = computedStyle.transform;
+
+			// Check if sidebar is hidden (translateX(-100%) or similar)
+			const isHidden = transform.includes('translateX(-100%') ||
+				transform.includes('translateX(-') ||
+				(transform === 'none' && computedStyle.left === '-100%');
+
+			// If sidebar is hidden and debug was active, reset to default
+			if (isHidden && this.isDebugActive) {
+				console.log('Sidebar closed, resetting debug button to default state');
+				this.setDebugActive(false);
+			}
+		});
+
+		// Observe style changes on the sidebar
+		sidebarObserver.observe(sidebar, {
+			attributes: true,
+			attributeFilter: ['style', 'class']
+		});
+
+		// Store the observer for cleanup
+		this._register({
+			dispose: () => {
+				sidebarObserver.disconnect();
+			}
+		});
 	}
 
 }

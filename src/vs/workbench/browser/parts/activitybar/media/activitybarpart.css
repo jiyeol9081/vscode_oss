@@ -77,30 +77,46 @@
 	display: none; /* Hidden by default */
 }
 
+.mobile-home-container {
+	display: none; /* Hidden by default */
+}
+
+.mobile-debug-container {
+	display: none; /* Hidden by default */
+}
+
 /* Mobile and small tablets - Move to bottom */
 @media screen and (max-width: 768px) {
 
-	/* Unified activity bar container for mobile */
-	.monaco-workbench .activitybar > .content > .activitybar-container {
-		display: flex !important;
-		flex-direction: row !important;
-		align-items: center !important;
-		justify-content: space-evenly !important;
-		width: 100% !important;
-		height: 100% !important;
-		gap: 0 !important;
-	}
-
 	/* Flatten all previous icon containers into this */
 	.monaco-workbench .activitybar > .content > .composite-bar,
-	.monaco-workbench .activitybar > .content .mobile-menu-container,
-	.monaco-workbench .activitybar > .content > div:not(.activitybar-container) {
+	.monaco-workbench .activitybar > .content > div:not(.mobile-menu-container):not(.mobile-settings-container):not(.mobile-copilot-container):not(.mobile-home-container):not(.mobile-debug-container) {
 		display: contents !important;
 	}
+
+	/* Hide original activity bar icons on mobile */
+	.monaco-workbench .activitybar > .content > .composite-bar .action-item,
+	.monaco-workbench .activitybar > .content .global-composite-bar .action-item {
+		display: none !important;
+		visibility: hidden !important;
+		opacity: 0 !important;
+		width: 0 !important;
+		height: 0 !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		overflow: hidden !important;
+		position: absolute !important;
+		left: -9999px !important;
+		top: -9999px !important;
+		pointer-events: none !important;
+	}
+
 	/* Show mobile menu containers with identical positioning */
 	.mobile-menu-container,
 	.mobile-settings-container,
-	.mobile-copilot-container {
+	.mobile-copilot-container,
+	.mobile-home-container,
+	.mobile-debug-container {
 		display: flex !important;
 		align-items: center !important;
 		justify-content: center !important;
@@ -109,11 +125,16 @@
 		flex: 0 0 44px !important;
 		box-sizing: border-box !important;
 		position: relative !important;
-		vertical-align: middle !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	.mobile-home-container {
+		order: -2; /* Place at the very beginning (leftmost) */
 	}
 
 	.mobile-menu-container {
-		order: -1; /* Place before file explorer */
+		order: -1; /* Place second (file submenu) */
 	}
 
 	.mobile-settings-container {
@@ -124,9 +145,15 @@
 		order: 500; /* Place in the middle */
 	}
 
+	.mobile-debug-container {
+		order: 600; /* Place after copilot */
+	}
+
 .submenu-button,
 .settings-button,
-.copilot-button {
+.copilot-button,
+.home-button,
+.debug-button {
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
@@ -148,8 +175,15 @@
 
 .submenu-button:hover,
 .settings-button:hover,
-.copilot-button:hover {
+.copilot-button:hover,
+.home-button:hover,
+.debug-button:hover {
 	background-color: var(--vscode-activityBar-activeBackground);
+}
+
+/* Adjust home button icon size to match other icons */
+.home-button .codicon {
+	font-size: 18px !important;
 }
 
 /* Mobile menu overlay - full screen modal */
@@ -327,13 +361,14 @@
 
 /* Responsive design for mobile menu */
 @media screen and (max-width: 480px) {
-	/* On very small screens, hide labels and show only icons */
+	/* On very small screens, keep labels visible like settings menu */
 	.mobile-menu-label {
-		display: none;
+		display: block; /* Show labels on small screens too */
+		font-size: 8px; /* Slightly smaller on very small screens */
 	}
 
 	.mobile-menu-icon {
-		margin-bottom: 0;
+		margin-bottom: 2px; /* Keep margin for label spacing */
 	}
 
 	.mobile-menu-item {
@@ -473,7 +508,7 @@
 		height: 54px !important;
 		display: flex !important;
 		flex-direction: row !important;
-		justify-content: space-around !important; /* Changed from space-evenly to space-around for better distribution */
+		justify-content: space-evenly !important; /* Consistent with container setting */
 		align-items: center !important;
 		padding: 0 8px !important;
 		overflow: visible !important;
@@ -486,10 +521,12 @@
 	}
 
 	/* ALL action items (main and global) - unified styling for uniform spacing */
-	.monaco-workbench .activitybar > .content .activitybar-container .action-item,
-	.monaco-workbench .activitybar > .content .activitybar-container .mobile-menu-container .submenu-button,
-	.monaco-workbench .activitybar > .content .activitybar-container .mobile-copilot-container .copilot-button,
-	.monaco-workbench .activitybar > .content .activitybar-container .mobile-settings-container .settings-button {
+	.monaco-workbench .activitybar > .content .action-item,
+	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button,
+	.monaco-workbench .activitybar > .content .mobile-copilot-container .copilot-button,
+	.monaco-workbench .activitybar > .content .mobile-settings-container .settings-button,
+	.monaco-workbench .activitybar > .content .mobile-home-container .home-button,
+	.monaco-workbench .activitybar > .content .mobile-debug-container .debug-button {
 		display: inline-flex !important;
 		margin: 0 !important;
 		flex: 0 0 44px !important; /* Fixed width for consistent sizing */
@@ -587,7 +624,7 @@
 	}
 
 	/* Global actions container - flatten into main container */
-	.monaco-workbench .activitybar > .content .activitybar-container > div:not(.action-item):not(.mobile-menu-container):not(.mobile-copilot-container):not(.mobile-settings-container) {
+	.monaco-workbench .activitybar > .content > div:not(.action-item):not(.mobile-menu-container):not(.mobile-copilot-container):not(.mobile-settings-container):not(.mobile-home-container):not(.mobile-debug-container) {
 		display: contents !important;
 	}
 
@@ -642,7 +679,9 @@
 	.monaco-workbench .activitybar > .content .action-item,
 	.monaco-workbench .activitybar > .content .mobile-menu-container .submenu-button,
 	.monaco-workbench .activitybar > .content .mobile-copilot-container .copilot-button,
-	.monaco-workbench .activitybar > .content .mobile-settings-container .settings-button {
+	.monaco-workbench .activitybar > .content .mobile-settings-container .settings-button,
+	.monaco-workbench .activitybar > .content .mobile-home-container .home-button,
+	.monaco-workbench .activitybar > .content .mobile-debug-container .debug-button {
 		min-width: 38px !important;
 		max-width: 38px !important;
 		width: 38px !important;
@@ -653,7 +692,9 @@
 	/* Adjust container sizes for smaller screens */
 	.monaco-workbench .activitybar > .content .mobile-menu-container,
 	.monaco-workbench .activitybar > .content .mobile-copilot-container,
-	.monaco-workbench .activitybar > .content .mobile-settings-container {
+	.monaco-workbench .activitybar > .content .mobile-settings-container,
+	.monaco-workbench .activitybar > .content .mobile-home-container,
+	.monaco-workbench .activitybar > .content .mobile-debug-container {
 		width: 38px !important;
 		height: 38px !important;
 		flex: 0 0 38px !important;
@@ -665,7 +706,9 @@
 	/* Adjust button sizes for smaller screens */
 	.submenu-button,
 	.settings-button,
-	.copilot-button {
+	.copilot-button,
+	.home-button,
+	.debug-button {
 		width: 38px !important;
 		height: 38px !important;
 		line-height: 38px !important;
@@ -775,11 +818,11 @@
 
 	/* Icon ordering */
 	.activitybar .mobile-home-container {
-		order: 1;
+		order: -2; /* Place at the very beginning (leftmost) */
 	}
 
 	.activitybar .mobile-menu-container {
-		order: 2;
+		order: -1; /* Place second (file submenu) */
 	}
 
 	.activitybar .mobile-copilot-container {

@@ -192,31 +192,51 @@ export class MobileMenuButton extends Disposable {
 				'.composite-bar .action-item',
 				'.composite-bar .monaco-action-bar .action-item',
 				'.composite-bar > .monaco-action-bar > .actions-container > .action-item',
+				'.global-composite-bar .action-item',
+				'.global-composite-bar .monaco-action-bar .action-item',
 				'[aria-label*="Explorer"]',
 				'[aria-label*="Search"]',
 				'[aria-label*="Source Control"]',
+				'[aria-label*="Extensions"]',
+				'[aria-label*="Manage Extensions"]',
+				'[aria-label*="Run and Debug"]',
+				'[aria-label*="Debug"]',
 				'[title*="Explorer"]',
 				'[title*="Search"]',
 				'[title*="Source Control"]',
+				'[title*="Extensions"]',
+				'[title*="Manage Extensions"]',
+				'[title*="Run and Debug"]',
+				'[title*="Debug"]',
 				'[data-id="workbench.view.explorer"]',
 				'[data-id="workbench.view.search"]',
-				'[data-id="workbench.view.scm"]'
+				'[data-id="workbench.view.scm"]',
+				'[data-id="workbench.view.extensions"]',
+				'[data-id="workbench.view.debug"]',
+				'.codicon-extensions',
+				'.codicon-debug-alt',
+				'[class*="extensions"]',
+				'[class*="debug"]'
 			];
 
 			selectors.forEach(selector => {
 				const elements = activityBarElement.querySelectorAll(selector);
+				console.log(`Selector "${selector}" found ${elements.length} elements`);
 				elements.forEach((element: Element, index: number) => {
 					const htmlElement = element as HTMLElement;
+					console.log(`Element ${index}:`, htmlElement.outerHTML.substring(0, 200));
 
-					// For general selectors, only hide first 3
+					// For general selectors, only hide first 5 (Explorer, Search, Source Control, Extensions, Debug)
 					if (selector === '.composite-bar .action-item' ||
 						selector === '.composite-bar .monaco-action-bar .action-item' ||
 						selector === '.composite-bar > .monaco-action-bar > .actions-container > .action-item') {
-						if (index >= 3) {
+						if (index >= 5) {
+							console.log(`Skipping element ${index} for general selector`);
 							return;
 						}
 					}
 
+					// For global composite bar, hide all matched items
 					// Apply multiple hiding strategies
 					htmlElement.style.setProperty('display', 'none', 'important');
 					htmlElement.style.setProperty('visibility', 'hidden', 'important');
@@ -237,6 +257,7 @@ export class MobileMenuButton extends Disposable {
 					// Remove from tab order
 					htmlElement.setAttribute('tabindex', '-1');
 					htmlElement.setAttribute('aria-hidden', 'true');
+					console.log(`Hidden element with selector "${selector}"`);
 				});
 			});
 
